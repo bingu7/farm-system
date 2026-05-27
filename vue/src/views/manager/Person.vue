@@ -3,7 +3,7 @@
     <div class="card" style="padding: 30px">
       <el-form :model="data.user" label-width="100px" style="padding-right: 50px">
         <div style="margin: 20px 0; text-align: center">
-          <el-upload :show-file-list="false" class="avatar-uploader" action="http://localhost:9090/files/upload" :on-success="handleFileUpload">
+          <el-upload :show-file-list="false" class="avatar-uploader" :action="uploadUrl" :headers="uploadHeaders" :before-upload="beforeImageUpload" :on-success="handleFileUpload">
             <img v-if="data.user.avatar" :src="data.user.avatar" class="avatar" />
             <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
           </el-upload>
@@ -39,11 +39,15 @@
 <script setup>
 import {reactive} from "vue"
 import request from "@/utils/request";
+import { beforeImageUpload, getUploadHeaders } from "@/utils/upload";
 import {ElMessage} from "element-plus";
 
 const data = reactive({
   user: JSON.parse(localStorage.getItem('system-user') || '{}'),
 })
+
+const uploadUrl = import.meta.env.VITE_BASE_URL + '/files/upload'
+const uploadHeaders = getUploadHeaders()
 
 const handleFileUpload = (file) => {
   data.user.avatar = file.data

@@ -44,7 +44,7 @@
           <el-input v-model="data.form.name" autocomplete="off" />
         </el-form-item>
         <el-form-item label="图片" prop="img">
-          <el-upload :action="uploadUrl" list-type="picture" :on-success="handleImgSuccess">
+          <el-upload :action="uploadUrl" :headers="uploadHeaders" :before-upload="beforeImageUpload" list-type="picture" :on-success="handleImgSuccess">
             <el-button type="primary">上传图片</el-button>
           </el-upload>
         </el-form-item>
@@ -87,6 +87,7 @@
 
 <script setup>
 import request from "@/utils/request";
+import { beforeImageUpload, getUploadHeaders } from "@/utils/upload";
 import {reactive} from "vue";
 import {ElMessageBox, ElMessage} from "element-plus";
 
@@ -109,6 +110,7 @@ request.get('/category/selectAll').then(res => {
 
 // 文件上传的接口地址
 const uploadUrl = import.meta.env.VITE_BASE_URL + '/files/upload'
+const uploadHeaders = getUploadHeaders()
 
 // 分页查询
 const load = () => {
