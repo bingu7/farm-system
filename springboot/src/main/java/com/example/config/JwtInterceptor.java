@@ -3,7 +3,8 @@ package com.example.config;
 import cn.hutool.core.util.ObjectUtil;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
+import com.example.Utils.LoginUserHolder;
+import com.example.Utils.TokenUtils;
 import com.example.entity.Account;
 import com.example.exception.CustomException;
 import jakarta.annotation.Resource;
@@ -26,25 +27,30 @@ public class JwtInterceptor implements HandlerInterceptor {
             throw new CustomException("401", "请登录");
         }
 
-        // 1. 【核心逻辑】：直接从 Redis 获取缓存的用户信息
-        // 这个 user 对象是在登录时存进去的，包含了 id, password, role 等所有信息
-        Account user = (Account) redisTemplate.opsForValue().get("LOGIN_USER_" + token);
-
-        if (user == null) {
-            // Redis 里没数据，说明 Token 已失效（过期或用户已退出）
-            throw new CustomException("401", "登录已失效，请重新登录");
-        }
-
         try {
-            // 2. 验证 JWT 签名
-            // 注意：这里直接使用从 Redis 拿到的 user.getPassword()
-            JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(user.getPassword())).build();
+            JWTVerifier jwtVerifier = JWT.require(TokenUtils.getAlgorithm()).build();
             jwtVerifier.verify(token);
         } catch (Exception e) {
-            // 如果签名不对（比如用户在别处改了密码，或者 Token 被篡改）
             throw new CustomException("401", "身份验证失败，请重新登录");
         }
 
+        Account user = (Account) redisTemplate.opsForValue().get("LOGIN_USER_" + token);
+        if (user == null) {
+            throw new CustomException("401", "登录已失效，请重新登录");
+        }
+
+        String tokenUserId = JWT.decode(token).getAudience().isEmpty() ? null : JWT.decode(token).getAudience().get(0);
+        if (ObjectUtil.isEmpty(tokenUserId) || !tokenUserId.equals(String.valueOf(user.getId()))) {
+            throw new CustomException("401", "身份验证失败，请重新登录");
+        }
+
+        LoginUserHolder.set(user);
+
         return true;
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        LoginUserHolder.clear();
     }
 }

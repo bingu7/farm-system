@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.common.Result;
+import com.example.Utils.AuthUtils;
 import com.example.entity.Goods;
 import com.example.service.GoodsService;
 import com.github.pagehelper.PageInfo;
@@ -24,6 +25,7 @@ public class GoodsController {
      */
     @PostMapping("/add")
     public Result add(@RequestBody Goods goods) {
+        AuthUtils.requireAdmin();
         goodsService.add(goods);
         return Result.success();
     }
@@ -33,6 +35,7 @@ public class GoodsController {
      */
     @DeleteMapping("/delete/{id}")
     public Result deleteById(@PathVariable Integer id) {
+        AuthUtils.requireAdmin();
         goodsService.deleteById(id);
         return Result.success();
     }
@@ -42,6 +45,7 @@ public class GoodsController {
      */
     @PutMapping("/update")
     public Result updateById(@RequestBody Goods goods) {
+        AuthUtils.requireAdmin();
         goodsService.updateById(goods);
         return Result.success();
     }

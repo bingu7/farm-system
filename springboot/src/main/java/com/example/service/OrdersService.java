@@ -59,15 +59,20 @@ public class OrdersService {
      * 修改状态
      */
     public void updateById(Orders orders) {
-        if ("已取消".equals(orders.getStatus())) { //用户取消订单  要返还库存
-            Integer goodsId = orders.getGoodsId();
+        Orders dbOrders = ordersMapper.selectById(orders.getId());
+        if (dbOrders == null) {
+            throw new CustomException("订单不存在");
+        }
+        if ("已取消".equals(orders.getStatus()) && !"已取消".equals(dbOrders.getStatus())) { //用户取消订单  要返还库存
+            Integer goodsId = dbOrders.getGoodsId();
             Goods goods = goodsService.selectById(goodsId);
             if (goods != null) {
-                goods.setStore(goods.getStore() + orders.getNum());
+                goods.setStore(goods.getStore() + dbOrders.getNum());
                 goodsService.updateById(goods);
             }
         }
-        ordersMapper.updateById(orders);
+        dbOrders.setStatus(orders.getStatus());
+        ordersMapper.updateById(dbOrders);
     }
 
     /**

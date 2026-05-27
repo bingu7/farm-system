@@ -1,6 +1,8 @@
 package com.example.controller;
 
 import com.example.common.Result;
+import com.example.Utils.AuthUtils;
+import com.example.entity.Account;
 import com.example.entity.User;
 import com.example.service.UserService;
 import com.github.pagehelper.PageInfo;
@@ -24,6 +26,7 @@ public class UserController {
      */
     @PostMapping("/add")
     public Result add(@RequestBody User user) {
+        AuthUtils.requireAdmin();
         userService.add(user);
         return Result.success();
     }
@@ -33,6 +36,7 @@ public class UserController {
      */
     @DeleteMapping("/delete/{id}")
     public Result deleteById(@PathVariable Integer id) {
+        AuthUtils.requireAdmin();
         userService.deleteById(id);
         return Result.success();
     }
@@ -42,7 +46,14 @@ public class UserController {
      */
     @PutMapping("/update")
     public Result updateById(@RequestBody User user) {
-        userService.updateById(user);
+        Account currentUser = AuthUtils.getCurrentUser();
+        if (AuthUtils.isAdmin(currentUser)) {
+            userService.updateById(user);
+        } else {
+            AuthUtils.requireSelfOrAdmin(user.getId());
+            user.setRole("USER");
+            userService.updateById(user);
+        }
         return Result.success();
     }
 
@@ -51,6 +62,7 @@ public class UserController {
      */
     @GetMapping("/selectById/{id}")
     public Result selectById(@PathVariable Integer id) {
+        AuthUtils.requireSelfOrAdmin(id);
         User user = userService.selectById(id);
         return Result.success(user);
     }
@@ -60,6 +72,7 @@ public class UserController {
      */
     @GetMapping("/selectAll")
     public Result selectAll(User user) {
+        AuthUtils.requireAdmin();
         List<User> list = userService.selectAll(user);
         return Result.success(list);
     }
@@ -71,6 +84,7 @@ public class UserController {
     public Result selectPage(User user,
                              @RequestParam(defaultValue = "1") Integer pageNum,
                              @RequestParam(defaultValue = "10") Integer pageSize) {
+        AuthUtils.requireAdmin();
         PageInfo<User> page = userService.selectPage(user, pageNum, pageSize);
         return Result.success(page);
     }

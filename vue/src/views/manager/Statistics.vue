@@ -74,9 +74,7 @@ const initCharts = (statData) => {
 }
 
 onMounted(() => {
-  request.get('/statistics', {
-    params: { userId: data.user.id, role: data.user.role }
-  }).then(res => {
+  request.get('/statistics').then(res => {
     if (res.code === '200') {
       data.stat = res.data
       initCharts(res.data)

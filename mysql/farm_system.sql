@@ -35,7 +35,7 @@ CREATE TABLE `admin`  (
 -- ----------------------------
 -- Records of admin
 -- ----------------------------
-INSERT INTO `admin` VALUES (1, 'admin', 'admin123', '管理员', 'http://localhost:9090/files/download/avatar.png', 'ADMIN');
+INSERT INTO `admin` VALUES (1, 'admin', '$2a$10$tG8ONew591uv2hFWelynWOcSrZsfr2rHITd.t4eWEkGsWg3hxkW/y', '管理员', 'http://localhost:9090/files/download/avatar.png', 'ADMIN');
 
 -- ----------------------------
 -- Table structure for category
@@ -166,8 +166,8 @@ CREATE TABLE `user`  (
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES (1, 'demo_user', 'user123', '演示用户甲', 'http://localhost:9090/files/download/avatar.png', 'USER', '男', '13800000001', 'demo1@example.com');
-INSERT INTO `user` VALUES (2, 'demo_user_2', 'user123', '演示用户乙', 'http://localhost:9090/files/download/avatar.png', 'USER', '女', '13800000002', 'demo2@example.com');
-INSERT INTO `user` VALUES (3, 'demo_user_3', 'user123', '演示用户丙', 'http://localhost:9090/files/download/avatar.png', 'USER', '男', '13800000003', NULL);
+INSERT INTO `user` VALUES (1, 'demo_user', '$2a$10$YqWv.1Ba.yY2FGsvVO7AY.h9IC4xi4AAEeUscDNYdztdGyoe4KaSa', '演示用户甲', 'http://localhost:9090/files/download/avatar.png', 'USER', '男', '13800000001', 'demo1@example.com');
+INSERT INTO `user` VALUES (2, 'demo_user_2', '$2a$10$YqWv.1Ba.yY2FGsvVO7AY.h9IC4xi4AAEeUscDNYdztdGyoe4KaSa', '演示用户乙', 'http://localhost:9090/files/download/avatar.png', 'USER', '女', '13800000002', 'demo2@example.com');
+INSERT INTO `user` VALUES (3, 'demo_user_3', '$2a$10$YqWv.1Ba.yY2FGsvVO7AY.h9IC4xi4AAEeUscDNYdztdGyoe4KaSa', '演示用户丙', 'http://localhost:9090/files/download/avatar.png', 'USER', '男', '13800000003', NULL);
 
 SET FOREIGN_KEY_CHECKS = 1;

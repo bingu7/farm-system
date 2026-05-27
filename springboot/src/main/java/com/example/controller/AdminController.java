@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.common.Result;
+import com.example.Utils.AuthUtils;
 import com.example.entity.Admin;
 import com.example.service.AdminService;
 import com.github.pagehelper.PageInfo;
@@ -24,6 +25,7 @@ public class AdminController {
      */
     @PostMapping("/add")
     public Result add(@RequestBody Admin admin) {
+        AuthUtils.requireAdmin();
         adminService.add(admin);
         return Result.success();
     }
@@ -33,6 +35,7 @@ public class AdminController {
      */
     @DeleteMapping("/delete/{id}")
     public Result deleteById(@PathVariable Integer id) {
+        AuthUtils.requireAdmin();
         adminService.deleteById(id);
         return Result.success();
     }
@@ -42,6 +45,7 @@ public class AdminController {
      */
     @PutMapping("/update")
     public Result updateById(@RequestBody Admin admin) {
+        AuthUtils.requireAdmin();
         adminService.updateById(admin);
         return Result.success();
     }
@@ -51,6 +55,7 @@ public class AdminController {
      */
     @GetMapping("/selectById/{id}")
     public Result selectById(@PathVariable Integer id) {
+        AuthUtils.requireAdmin();
         Admin admin = adminService.selectById(id);
         return Result.success(admin);
     }
@@ -60,6 +65,7 @@ public class AdminController {
      */
     @GetMapping("/selectAll")
     public Result selectAll(Admin admin) {
+        AuthUtils.requireAdmin();
         List<Admin> list = adminService.selectAll(admin);
         return Result.success(list);
     }
@@ -71,6 +77,7 @@ public class AdminController {
     public Result selectPage(Admin admin,
                              @RequestParam(defaultValue = "1") Integer pageNum,
                              @RequestParam(defaultValue = "10") Integer pageSize) {
+        AuthUtils.requireAdmin();
         PageInfo<Admin> page = adminService.selectPage(admin, pageNum, pageSize);
         return Result.success(page);
     }

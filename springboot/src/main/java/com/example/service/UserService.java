@@ -1,8 +1,10 @@
 package com.example.service;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.example.Utils.AccountSanitizer;
 import com.example.entity.Account;
 import com.example.entity.User;
+import com.example.Utils.PasswordUtils;
 import com.example.exception.CustomException;
 import com.example.mapper.UserMapper;
 import com.github.pagehelper.PageHelper;
@@ -32,6 +34,7 @@ public class UserService {
         if (ObjectUtil.isEmpty(user.getPassword())) {
             user.setPassword("123");
         }
+        user.setPassword(PasswordUtils.encode(user.getPassword()));
         if (ObjectUtil.isEmpty(user.getName())) {
             user.setName(user.getUsername());
         }
@@ -50,6 +53,22 @@ public class UserService {
      * 修改
      */
     public void updateById(User user) {
+        User dbUser = userMapper.selectById(user.getId());
+        if (ObjectUtil.isNull(dbUser)) {
+            throw new CustomException("用户不存在");
+        }
+        if (!dbUser.getUsername().equals(user.getUsername())) {
+            User userByUsername = userMapper.selectByUsername(user.getUsername());
+            if (ObjectUtil.isNotNull(userByUsername) && !userByUsername.getId().equals(user.getId())) {
+                throw new CustomException("用户已存在");
+            }
+        }
+        if (ObjectUtil.isEmpty(user.getPassword())) {
+            user.setPassword(dbUser.getPassword());
+        } else {
+            user.setPassword(PasswordUtils.encode(user.getPassword()));
+        }
+        user.setRole("USER");
         userMapper.updateById(user);
     }
 
@@ -57,14 +76,14 @@ public class UserService {
      * 根据ID查询
      */
     public User selectById(Integer id) {
-        return userMapper.selectById(id);
+        return AccountSanitizer.sanitize(userMapper.selectById(id));
     }
 
     /**
      * 查询所有
      */
     public List<User> selectAll(User user) {
-        return userMapper.selectAll(user);
+        return AccountSanitizer.sanitizeList(userMapper.selectAll(user));
     }
 
     /**
@@ -73,6 +92,7 @@ public class UserService {
     public PageInfo<User> selectPage(User user, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
         List<User> list = userMapper.selectAll(user);
+        AccountSanitizer.sanitizeList(list);
         return PageInfo.of(list);
     }
 
@@ -80,13 +100,18 @@ public class UserService {
      * 登录
      */
     public Account login(Account account) {
-        Account dbUser = userMapper.selectByUsername(account.getUsername());
+        User dbUser = userMapper.selectByUsername(account.getUsername());
         if (ObjectUtil.isNull(dbUser)) {
             throw new CustomException("用户不存在");
         }
-        if (!account.getPassword().equals(dbUser.getPassword())) {
+        if (!PasswordUtils.matches(account.getPassword(), dbUser.getPassword())) {
             throw new CustomException("账号或密码错误");
         }
+        if (PasswordUtils.needsUpgrade(dbUser.getPassword())) {
+            dbUser.setPassword(PasswordUtils.encode(account.getPassword()));
+            userMapper.updateById(dbUser);
+        }
+        AccountSanitizer.sanitize(dbUser);
         return dbUser;
     }
 
@@ -98,10 +123,13 @@ public class UserService {
         if (ObjectUtil.isNull(dbUser)) {
             throw new CustomException("用户不存在");
         }
-        if (!account.getPassword().equals(dbUser.getPassword())) {
+        if (!PasswordUtils.matches(account.getPassword(), dbUser.getPassword())) {
             throw new CustomException("原密码错误");
         }
-        dbUser.setPassword(account.getNewPassword());
+        if (ObjectUtil.isEmpty(account.getNewPassword())) {
+            throw new CustomException("新密码不能为空");
+        }
+        dbUser.setPassword(PasswordUtils.encode(account.getNewPassword()));
         userMapper.updateById(dbUser);
     }
 

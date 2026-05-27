@@ -1,8 +1,10 @@
 package com.example.service;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.example.Utils.AccountSanitizer;
 import com.example.entity.Account;
 import com.example.entity.Admin;
+import com.example.Utils.PasswordUtils;
 import com.example.exception.CustomException;
 import com.example.mapper.AdminMapper;
 import com.github.pagehelper.PageHelper;
@@ -32,6 +34,7 @@ public class AdminService {
         if (ObjectUtil.isEmpty(admin.getPassword())) {
             admin.setPassword("admin");
         }
+        admin.setPassword(PasswordUtils.encode(admin.getPassword()));
         if (ObjectUtil.isEmpty(admin.getName())) {
             admin.setName(admin.getUsername());
         }
@@ -50,6 +53,22 @@ public class AdminService {
      * 修改
      */
     public void updateById(Admin admin) {
+        Admin dbAdmin = adminMapper.selectById(admin.getId());
+        if (ObjectUtil.isNull(dbAdmin)) {
+            throw new CustomException("用户不存在");
+        }
+        if (!dbAdmin.getUsername().equals(admin.getUsername())) {
+            Admin adminByUsername = adminMapper.selectByUsername(admin.getUsername());
+            if (ObjectUtil.isNotNull(adminByUsername) && !adminByUsername.getId().equals(admin.getId())) {
+                throw new CustomException("用户已存在");
+            }
+        }
+        if (ObjectUtil.isEmpty(admin.getPassword())) {
+            admin.setPassword(dbAdmin.getPassword());
+        } else {
+            admin.setPassword(PasswordUtils.encode(admin.getPassword()));
+        }
+        admin.setRole("ADMIN");
         adminMapper.updateById(admin);
     }
 
@@ -57,14 +76,14 @@ public class AdminService {
      * 根据ID查询
      */
     public Admin selectById(Integer id) {
-        return adminMapper.selectById(id);
+        return AccountSanitizer.sanitize(adminMapper.selectById(id));
     }
 
     /**
      * 查询所有
      */
     public List<Admin> selectAll(Admin admin) {
-        return adminMapper.selectAll(admin);
+        return AccountSanitizer.sanitizeList(adminMapper.selectAll(admin));
     }
 
     /**
@@ -73,6 +92,7 @@ public class AdminService {
     public PageInfo<Admin> selectPage(Admin admin, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
         List<Admin> list = adminMapper.selectAll(admin);
+        AccountSanitizer.sanitizeList(list);
         return PageInfo.of(list);
     }
 
@@ -80,13 +100,18 @@ public class AdminService {
      * 登录
      */
     public Account login(Account account) {
-        Account dbAdmin = adminMapper.selectByUsername(account.getUsername());
+        Admin dbAdmin = adminMapper.selectByUsername(account.getUsername());
         if (ObjectUtil.isNull(dbAdmin)) {
             throw new CustomException("用户不存在");
         }
-        if (!account.getPassword().equals(dbAdmin.getPassword())) {
+        if (!PasswordUtils.matches(account.getPassword(), dbAdmin.getPassword())) {
             throw new CustomException("账号或密码错误");
         }
+        if (PasswordUtils.needsUpgrade(dbAdmin.getPassword())) {
+            dbAdmin.setPassword(PasswordUtils.encode(account.getPassword()));
+            adminMapper.updateById(dbAdmin);
+        }
+        AccountSanitizer.sanitize(dbAdmin);
         return dbAdmin;
     }
 
@@ -98,10 +123,13 @@ public class AdminService {
         if (ObjectUtil.isNull(dbAdmin)) {
             throw new CustomException("用户不存在");
         }
-        if (!account.getPassword().equals(dbAdmin.getPassword())) {
+        if (!PasswordUtils.matches(account.getPassword(), dbAdmin.getPassword())) {
             throw new CustomException("原密码错误");
         }
-        dbAdmin.setPassword(account.getNewPassword());
+        if (ObjectUtil.isEmpty(account.getNewPassword())) {
+            throw new CustomException("新密码不能为空");
+        }
+        dbAdmin.setPassword(PasswordUtils.encode(account.getNewPassword()));
         adminMapper.updateById(dbAdmin);
     }
 

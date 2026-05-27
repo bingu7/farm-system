@@ -1,6 +1,8 @@
 package com.example.controller;
 
 import com.example.common.Result;
+import com.example.Utils.AuthUtils;
+import com.example.entity.Account;
 import com.example.entity.Orders;
 import com.example.service.OrdersService;
 import com.github.pagehelper.PageInfo;
@@ -24,6 +26,8 @@ public class OrdersController {
      */
     @PostMapping("/add")
     public Result add(@RequestBody Orders orders) {
+        Account currentUser = AuthUtils.getCurrentUser();
+        orders.setUserId(currentUser.getId());
         ordersService.add(orders);
         return Result.success();
     }
@@ -33,6 +37,7 @@ public class OrdersController {
      */
     @DeleteMapping("/delete/{id}")
     public Result deleteById(@PathVariable Integer id) {
+        AuthUtils.requireAdmin();
         ordersService.deleteById(id);
         return Result.success();
     }
@@ -42,6 +47,11 @@ public class OrdersController {
      */
     @PutMapping("/update")
     public Result updateById(@RequestBody Orders orders) {
+        Orders dbOrders = ordersService.selectById(orders.getId());
+        if (dbOrders == null) {
+            return Result.error("订单不存在");
+        }
+        AuthUtils.requireSelfOrAdmin(dbOrders.getUserId());
         ordersService.updateById(orders);
         return Result.success();
     }
@@ -52,6 +62,10 @@ public class OrdersController {
     @GetMapping("/selectById/{id}")
     public Result selectById(@PathVariable Integer id) {
         Orders orders = ordersService.selectById(id);
+        if (orders == null) {
+            return Result.success();
+        }
+        AuthUtils.requireSelfOrAdmin(orders.getUserId());
         return Result.success(orders);
     }
 
@@ -60,6 +74,10 @@ public class OrdersController {
      */
     @GetMapping("/selectAll")
     public Result selectAll(Orders orders) {
+        Account currentUser = AuthUtils.getCurrentUser();
+        if (!AuthUtils.isAdmin(currentUser)) {
+            orders.setUserId(currentUser.getId());
+        }
         List<Orders> list = ordersService.selectAll(orders);
         return Result.success(list);
     }
@@ -71,6 +89,10 @@ public class OrdersController {
     public Result selectPage(Orders orders,
                              @RequestParam(defaultValue = "1") Integer pageNum,
                              @RequestParam(defaultValue = "10") Integer pageSize) {
+        Account currentUser = AuthUtils.getCurrentUser();
+        if (!AuthUtils.isAdmin(currentUser)) {
+            orders.setUserId(currentUser.getId());
+        }
         PageInfo<Orders> page = ordersService.selectPage(orders, pageNum, pageSize);
         return Result.success(page);
     }

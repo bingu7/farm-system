@@ -1,6 +1,8 @@
 package com.example.controller;
 
 import com.example.common.Result;
+import com.example.Utils.AccountSanitizer;
+import com.example.Utils.AuthUtils;
 import com.example.Utils.TokenUtils;
 import com.example.entity.Account;
 import com.example.entity.User;
@@ -57,12 +59,10 @@ public class WebController {
         Account ac = "ADMIN".equals(account.getRole()) ? adminService.login(account) : userService.login(account);
 
         // 登录成功后生成 Token
-        String token = TokenUtils.createToken(ac.getId().toString(), ac.getRole(), ac.getPassword());
+        String token = TokenUtils.createToken(ac.getId().toString(), ac.getRole());
         ac.setToken(token);
+        AccountSanitizer.sanitize(ac);
 
-        //  将 Token 存储到 Redis 中
-        // 【方案一核心】：存入 Redis，Key 加前缀方便区分
-        // 设置 1 天有效期，与 JWT 过期时间一致
         redisTemplate.opsForValue().set("LOGIN_USER_" + token, ac, 1, TimeUnit.DAYS);
 
         return Result.success(ac);
@@ -93,11 +93,18 @@ public class WebController {
      * 修改密码
      */
     @PutMapping("/updatePassword")
-    public Result updatePassword(@RequestBody Account account) {
-        if ("ADMIN".equals(account.getRole())) {
+    public Result updatePassword(HttpServletRequest request, @RequestBody Account account) {
+        Account currentUser = AuthUtils.getCurrentUser();
+        account.setUsername(currentUser.getUsername());
+        account.setRole(currentUser.getRole());
+        if ("ADMIN".equals(currentUser.getRole())) {
             adminService.updatePassword(account);
         } else {
             userService.updatePassword(account);
+        }
+        String token = request.getHeader("token");
+        if (token != null) {
+            redisTemplate.delete("LOGIN_USER_" + token);
         }
         return Result.success();
     }
@@ -105,8 +112,9 @@ public class WebController {
      * 统计
      */
     @GetMapping("/statistics")
-    public Result getStatistics(@RequestParam Integer userId, @RequestParam String role) {
-        return Result.success(statisticsService.getStatistics(userId, role));
+    public Result getStatistics() {
+        Account currentUser = AuthUtils.getCurrentUser();
+        return Result.success(statisticsService.getStatistics(currentUser.getId(), currentUser.getRole()));
     }
 
 }

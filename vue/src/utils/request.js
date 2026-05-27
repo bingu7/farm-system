@@ -45,8 +45,14 @@ request.interceptors.response.use(
         // 1. 如果 code 是 401，说明权限验证失败（未登录或 Token 过期）
         if (res.code === '401') {
             ElMessage.error(res.msg || '请重新登录');
+            localStorage.removeItem('system-user')
             router.push("/login") // 跳转到登录页
             return res; // 返回 res 阻止后续逻辑
+        }
+
+        if (res.code === '403') {
+            ElMessage.error(res.msg || '无权限操作');
+            return res;
         }
         
         // 2. 如果 code 是 500，说明是业务报错（比如：用户已存在、密码错误等）

@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.common.Result;
+import com.example.Utils.AuthUtils;
 import com.example.entity.Notice;
 import com.example.service.NoticeService;
 import com.github.pagehelper.PageInfo;
@@ -24,6 +25,7 @@ public class NoticeController {
      */
     @PostMapping("/add")
     public Result add(@RequestBody Notice notice) {
+        AuthUtils.requireAdmin();
         noticeService.add(notice);
         return Result.success();
     }
@@ -33,6 +35,7 @@ public class NoticeController {
      */
     @DeleteMapping("/delete/{id}")
     public Result deleteById(@PathVariable Integer id) {
+        AuthUtils.requireAdmin();
         noticeService.deleteById(id);
         return Result.success();
     }
@@ -42,6 +45,7 @@ public class NoticeController {
      */
     @PutMapping("/update")
     public Result updateById(@RequestBody Notice notice) {
+        AuthUtils.requireAdmin();
         noticeService.updateById(notice);
         return Result.success();
     }

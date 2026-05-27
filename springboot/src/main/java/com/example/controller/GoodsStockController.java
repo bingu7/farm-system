@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.common.Result;
+import com.example.Utils.AuthUtils;
 import com.example.entity.GoodsStock;
 import com.example.service.GoodsStockService;
 import com.github.pagehelper.PageInfo;
@@ -24,6 +25,7 @@ public class GoodsStockController {
      */
     @PostMapping("/add")
     public Result add(@RequestBody GoodsStock goodsStock) {
+        AuthUtils.requireAdmin();
         goodsStockService.add(goodsStock);
         return Result.success();
     }
@@ -33,6 +35,7 @@ public class GoodsStockController {
      */
     @DeleteMapping("/delete/{id}")
     public Result deleteById(@PathVariable Integer id) {
+        AuthUtils.requireAdmin();
         goodsStockService.deleteById(id);
         return Result.success();
     }
@@ -42,6 +45,7 @@ public class GoodsStockController {
      */
     @PutMapping("/update")
     public Result updateById(@RequestBody GoodsStock goodsStock) {
+        AuthUtils.requireAdmin();
         goodsStockService.updateById(goodsStock);
         return Result.success();
     }
@@ -51,6 +55,7 @@ public class GoodsStockController {
      */
     @GetMapping("/selectById/{id}")
     public Result selectById(@PathVariable Integer id) {
+        AuthUtils.requireAdmin();
         GoodsStock goodsStock = goodsStockService.selectById(id);
         return Result.success(goodsStock);
     }
@@ -60,6 +65,7 @@ public class GoodsStockController {
      */
     @GetMapping("/selectAll")
     public Result selectAll(GoodsStock goodsStock) {
+        AuthUtils.requireAdmin();
         List<GoodsStock> list = goodsStockService.selectAll(goodsStock);
         return Result.success(list);
     }
@@ -71,6 +77,7 @@ public class GoodsStockController {
     public Result selectPage(GoodsStock goodsStock,
                              @RequestParam(defaultValue = "1") Integer pageNum,
                              @RequestParam(defaultValue = "10") Integer pageSize) {
+        AuthUtils.requireAdmin();
         PageInfo<GoodsStock> page = goodsStockService.selectPage(goodsStock, pageNum, pageSize);
         return Result.success(page);
     }
