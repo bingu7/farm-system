@@ -9,16 +9,12 @@ vue/dist/
 # Backend
 springboot/target/
 springboot/.idea/
-springboot/files/1720416775213-1720163458536-微信截图_20240409161139.png
-springboot/files/1720417001678-1720163839718-微信截图_20231018172208.png
-springboot/files/1720417053485-1720163839718-微信截图_20231018172208.png
-springboot/files/1720417063539-1720150542794-微信截图_20240409161232.png
-springboot/files/1769153220675-v2-ad97890457df7b30efc36b7f44f0626e_r.jpg
-springboot/files/1769153228353-【哲风壁纸】卡通-喜洋洋与灰太狼.png
-springboot/files/1773923339752-1720150542794-微信截图_20240409161232.png
-files/1720150542794-微信截图_20240409161232.png
-files/1720163458536-微信截图_20240409161139.png
-files/1720163839718-微信截图_20231018172208.png
+
+# Runtime uploads
+springboot/files/
+springboot/uploads/
+files/
+uploads/
 
 # OS / editor
 .DS_Store

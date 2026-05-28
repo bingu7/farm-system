@@ -25,7 +25,6 @@ import java.util.UUID;
 @RequestMapping("/files")
 public class FileController {
 
-    private static final Path FILE_DIRECTORY = Paths.get(System.getProperty("user.dir"), "files").toAbsolutePath().normalize();
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp", "bmp");
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
             "image/jpeg",
@@ -38,6 +37,9 @@ public class FileController {
 
     @Value("${fileBaseUrl}")
     private String fileBaseUrl;
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     @PostMapping("/upload")
     public Result upload(@RequestParam("file") MultipartFile file) {
@@ -57,11 +59,12 @@ public class FileController {
         }
 
         try {
-            Files.createDirectories(FILE_DIRECTORY);
+            Path fileDirectory = getFileDirectory();
+            Files.createDirectories(fileDirectory);
 
             String fileName = UUID.randomUUID().toString().replace("-", "") + "." + extension;
-            Path targetPath = FILE_DIRECTORY.resolve(fileName).normalize();
-            if (!targetPath.startsWith(FILE_DIRECTORY)) {
+            Path targetPath = fileDirectory.resolve(fileName).normalize();
+            if (!targetPath.startsWith(fileDirectory)) {
                 return Result.error("文件路径不合法");
             }
 
@@ -81,8 +84,8 @@ public class FileController {
             return;
         }
 
-        Path targetPath = FILE_DIRECTORY.resolve(fileName).normalize();
-        if (!targetPath.startsWith(FILE_DIRECTORY) || !Files.exists(targetPath) || !Files.isRegularFile(targetPath)) {
+        Path targetPath = resolveDownloadPath(fileName);
+        if (targetPath == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
@@ -108,5 +111,26 @@ public class FileController {
             return "";
         }
         return fileName.substring(index + 1).toLowerCase();
+    }
+
+    private Path getFileDirectory() {
+        return Paths.get(uploadDir).toAbsolutePath().normalize();
+    }
+
+    private Path resolveDownloadPath(String fileName) {
+        Path[] directories = new Path[]{
+                getFileDirectory(),
+                Paths.get(System.getProperty("user.dir"), "files").toAbsolutePath().normalize(),
+                Paths.get(System.getProperty("user.dir"), "..", "files").toAbsolutePath().normalize()
+        };
+
+        for (Path directory : directories) {
+            Path targetPath = directory.resolve(fileName).normalize();
+            if (targetPath.startsWith(directory) && Files.exists(targetPath) && Files.isRegularFile(targetPath)) {
+                return targetPath;
+            }
+        }
+
+        return null;
     }
 }

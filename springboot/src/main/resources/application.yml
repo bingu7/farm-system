@@ -31,3 +31,7 @@ mybatis:
 
 # 文件上传的前缀url
 fileBaseUrl: ${FILE_BASE_URL:http://localhost:9090}
+
+file:
+  #upload-dir: ${FILE_UPLOAD_DIR:${user.home}/farm-system/uploads}
+  upload-dir: ${FILE_UPLOAD_DIR:D:/farm-system/uploads}

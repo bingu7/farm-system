@@ -83,3 +83,12 @@ FILE_BASE_URL
 管理员：admin / admin123
 普通用户：demo_user / user123
 ```
+## 上传目录配置
+
+上传图片保存目录通过 `FILE_UPLOAD_DIR` 配置。建议使用绝对路径，例如：
+
+```powershell
+$env:FILE_UPLOAD_DIR="D:\farm-system\uploads"
+```
+
+如果不设置，后端默认保存到当前用户目录下的 `farm-system/uploads`，避免因为从不同目录启动后端导致图片分散到多个 `files` 目录。
