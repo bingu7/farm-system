@@ -1,4 +1,8 @@
 import {createRouter, createWebHistory} from 'vue-router'
+import { ElMessage } from 'element-plus'
+
+const adminPaths = ['/admin', '/user', '/notice', '/category', '/goods', '/goodsStock']
+const userPaths = ['/buy']
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,6 +29,30 @@ const router = createRouter({
     { path: '/login', component: () => import('@/views/Login.vue')},
     { path: '/register', component: () => import('@/views/Register.vue')},
   ]
+})
+
+router.beforeEach((to) => {
+  if (to.path === '/login' || to.path === '/register') {
+    return true
+  }
+
+  const user = JSON.parse(localStorage.getItem('system-user') || '{}')
+  if (!user?.token) {
+    ElMessage.error('请先登录')
+    return '/login'
+  }
+
+  if (adminPaths.includes(to.path) && user.role !== 'ADMIN') {
+    ElMessage.error('无权限访问')
+    return '/home'
+  }
+
+  if (userPaths.includes(to.path) && user.role !== 'USER') {
+    ElMessage.error('无权限访问')
+    return '/home'
+  }
+
+  return true
 })
 
 export default router

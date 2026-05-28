@@ -75,10 +75,6 @@ const load = () => {
 
   // 2. 判断角色。如果是普通用户，强制在参数里加上自己的 ID
   // 这样后端接收到的 Orders 对象里就会有 userId，从而触发 SQL 里的过滤
-  if (data.user.role === 'USER') {
-    params.userId = data.user.id
-  }
-
   // 3. 发送请求
   request.get('/orders/selectPage', {
     params: params
@@ -90,8 +86,7 @@ const load = () => {
 
 // 操作按钮
 const changeStatus = (row, status) => {
-  row.status = status
-  request.put('/orders/update', row).then(res => {
+  request.put('/orders/update', { id: row.id, status }).then(res => {
     if (res.code === '200') {
       load()
       ElMessage.success('操作成功')

@@ -2,6 +2,8 @@ package com.example.service;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
+import com.example.Utils.AuthUtils;
+import com.example.entity.Account;
 import com.example.entity.Goods;
 import com.example.entity.Orders;
 import com.example.exception.CustomException;
@@ -14,88 +16,100 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * 业务处理
- **/
 @Service
 public class OrdersService {
+
+    private static final String STATUS_CANCELLED = "已取消";
+    private static final String STATUS_PENDING_PAY = "待支付";
+    private static final String STATUS_PENDING_SHIP = "待发货";
+    private static final String STATUS_PENDING_RECEIVE = "待收货";
+    private static final String STATUS_COMPLETED = "已完成";
 
     @Resource
     private OrdersMapper ordersMapper;
     @Resource
     private GoodsService goodsService;
 
-    /**
-     * 新增
-     */
     @Transactional
     public void add(Orders orders) {
-        orders.setOrderNo(IdUtil.fastSimpleUUID());  // 唯一的订单编号
-        orders.setTime(DateUtil.now());
-        orders.setStatus("待支付");
+        if (orders.getGoodsId() == null) {
+            throw new CustomException("请选择商品");
+        }
+        if (orders.getNum() == null || orders.getNum() <= 0) {
+            throw new CustomException("购买数量必须大于0");
+        }
 
-        // 扣减库存
         Goods goods = goodsService.selectById(orders.getGoodsId());
         if (goods == null) {
             throw new CustomException("商品不存在");
         }
-        int store = goods.getStore() - orders.getNum();
-        if (store < 0) {
+
+        if (!goodsService.decreaseStock(orders.getGoodsId(), orders.getNum())) {
             throw new CustomException("商品库存不足");
         }
-        goods.setStore(store);
-        goodsService.updateById(goods);
+
+        orders.setOrderNo(IdUtil.fastSimpleUUID());
+        orders.setTime(DateUtil.now());
+        orders.setStatus(STATUS_PENDING_PAY);
         ordersMapper.insert(orders);
     }
 
-    /**
-     * 删除
-     */
     public void deleteById(Integer id) {
         ordersMapper.deleteById(id);
     }
 
-    /**
-     * 修改状态
-     */
-    public void updateById(Orders orders) {
-        Orders dbOrders = ordersMapper.selectById(orders.getId());
+    @Transactional
+    public void updateStatus(Integer orderId, String targetStatus, Account currentUser) {
+        if (orderId == null) {
+            throw new CustomException("订单不存在");
+        }
+        Orders dbOrders = ordersMapper.selectById(orderId);
         if (dbOrders == null) {
             throw new CustomException("订单不存在");
         }
-        if ("已取消".equals(orders.getStatus()) && !"已取消".equals(dbOrders.getStatus())) { //用户取消订单  要返还库存
-            Integer goodsId = dbOrders.getGoodsId();
-            Goods goods = goodsService.selectById(goodsId);
-            if (goods != null) {
-                goods.setStore(goods.getStore() + dbOrders.getNum());
-                goodsService.updateById(goods);
-            }
+        if (targetStatus == null || targetStatus.isBlank()) {
+            throw new CustomException("订单状态不能为空");
         }
-        dbOrders.setStatus(orders.getStatus());
+        if (targetStatus.equals(dbOrders.getStatus())) {
+            return;
+        }
+
+        assertAllowedStatusChange(dbOrders.getStatus(), targetStatus, currentUser);
+
+        if (STATUS_CANCELLED.equals(targetStatus)) {
+            goodsService.increaseStock(dbOrders.getGoodsId(), dbOrders.getNum());
+        }
+
+        dbOrders.setStatus(targetStatus);
         ordersMapper.updateById(dbOrders);
     }
 
-    /**
-     * 根据ID查询
-     */
+    private void assertAllowedStatusChange(String currentStatus, String targetStatus, Account currentUser) {
+        boolean allowed;
+        if (AuthUtils.isAdmin(currentUser)) {
+            allowed = STATUS_PENDING_SHIP.equals(currentStatus) && STATUS_PENDING_RECEIVE.equals(targetStatus);
+        } else {
+            allowed = (STATUS_PENDING_PAY.equals(currentStatus) && STATUS_PENDING_SHIP.equals(targetStatus))
+                    || (STATUS_PENDING_PAY.equals(currentStatus) && STATUS_CANCELLED.equals(targetStatus))
+                    || (STATUS_PENDING_RECEIVE.equals(currentStatus) && STATUS_COMPLETED.equals(targetStatus));
+        }
+
+        if (!allowed) {
+            throw new CustomException("订单状态流转不合法");
+        }
+    }
+
     public Orders selectById(Integer id) {
         return ordersMapper.selectById(id);
     }
 
-    /**
-     * 查询所有
-     */
     public List<Orders> selectAll(Orders orders) {
         return ordersMapper.selectAll(orders);
     }
 
-    /**
-     * 分页查询
-     */
     public PageInfo<Orders> selectPage(Orders orders, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
         List<Orders> list = ordersMapper.selectAll(orders);
         return PageInfo.of(list);
     }
-
 }

@@ -51,8 +51,9 @@ public class OrdersController {
         if (dbOrders == null) {
             return Result.error("订单不存在");
         }
+        Account currentUser = AuthUtils.getCurrentUser();
         AuthUtils.requireSelfOrAdmin(dbOrders.getUserId());
-        ordersService.updateById(orders);
+        ordersService.updateStatus(orders.getId(), orders.getStatus(), currentUser);
         return Result.success();
     }
 

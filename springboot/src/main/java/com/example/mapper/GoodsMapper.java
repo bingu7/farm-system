@@ -3,7 +3,9 @@ package com.example.mapper;
 import com.example.entity.Goods;
 import com.example.entity.StatVo;
 import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -33,6 +35,12 @@ public interface GoodsMapper {
     */
     @Select("select * from goods where id = #{id}")
     Goods selectById(Integer id);
+
+    @Update("update goods set store = store - #{num} where id = #{goodsId} and store >= #{num}")
+    int decreaseStock(@Param("goodsId") Integer goodsId, @Param("num") Integer num);
+
+    @Update("update goods set store = store + #{num} where id = #{goodsId}")
+    int increaseStock(@Param("goodsId") Integer goodsId, @Param("num") Integer num);
 
     /**
       * 查询所有

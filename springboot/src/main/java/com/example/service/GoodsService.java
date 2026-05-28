@@ -46,6 +46,14 @@ public class GoodsService {
         return goodsMapper.selectById(id);
     }
 
+    public boolean decreaseStock(Integer goodsId, Integer num) {
+        return goodsMapper.decreaseStock(goodsId, num) > 0;
+    }
+
+    public void increaseStock(Integer goodsId, Integer num) {
+        goodsMapper.increaseStock(goodsId, num);
+    }
+
     /**
      * 查询所有
      */
