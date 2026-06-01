@@ -1,0 +1,19 @@
+# Copy this file to application-local.yml for local-only settings.
+# application-local.yml is ignored by git and should not be committed.
+
+spring:
+  datasource:
+    username: root
+    password: your_mysql_password
+    url: jdbc:mysql://localhost:3306/farm_system?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2b8&allowPublicKeyRetrieval=true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: your_redis_password
+
+fileBaseUrl: http://localhost:9090
+
+file:
+  upload-dir: D:/farm-system/uploads
+  max-upload-size: 5242880

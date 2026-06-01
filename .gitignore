@@ -9,6 +9,8 @@ vue/dist/
 # Backend
 springboot/target/
 springboot/.idea/
+springboot/application-local.yml
+springboot/src/main/resources/application-local.yml
 
 # Runtime uploads
 springboot/files/

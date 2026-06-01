@@ -38,4 +38,7 @@ public interface GoodsStockMapper {
     */
     List<GoodsStock> selectAll(GoodsStock goodsStock);
 
+    @Select("select count(*) from goods_stock where goods_id = #{goodsId}")
+    int countByGoodsId(Integer goodsId);
+
 }

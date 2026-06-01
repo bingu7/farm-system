@@ -7,6 +7,7 @@ import com.example.entity.User;
 import com.example.Utils.PasswordUtils;
 import com.example.Utils.ValidationUtils;
 import com.example.exception.CustomException;
+import com.example.mapper.OrdersMapper;
 import com.example.mapper.UserMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -23,6 +24,8 @@ public class UserService {
 
     @Resource
     private UserMapper userMapper;
+    @Resource
+    private OrdersMapper ordersMapper;
 
     /**
      * 新增
@@ -48,6 +51,9 @@ public class UserService {
      * 删除
      */
     public void deleteById(Integer id) {
+        if (ordersMapper.countByUserId(id) > 0) {
+            throw new CustomException("该用户已有订单，不能删除");
+        }
         userMapper.deleteById(id);
     }
 

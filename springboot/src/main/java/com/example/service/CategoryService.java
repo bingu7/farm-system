@@ -1,7 +1,9 @@
 package com.example.service;
 
 import com.example.entity.Category;
+import com.example.exception.CustomException;
 import com.example.mapper.CategoryMapper;
+import com.example.mapper.GoodsMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import jakarta.annotation.Resource;
@@ -21,6 +23,9 @@ public class CategoryService {
     private CategoryMapper categoryMapper;
 
     @Resource
+    private GoodsMapper goodsMapper;
+
+    @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
     // 1. 定义缓存的 Key
@@ -38,6 +43,9 @@ public class CategoryService {
      * 删除
      */
     public void deleteById(Integer id) {
+        if (goodsMapper.countByCategoryId(id) > 0) {
+            throw new CustomException("该分类下已有商品，不能删除");
+        }
         categoryMapper.deleteById(id);
         clearCache(); // 清理缓存
     }

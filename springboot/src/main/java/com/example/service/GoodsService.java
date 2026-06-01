@@ -3,6 +3,8 @@ package com.example.service;
 import com.example.entity.Goods;
 import com.example.exception.CustomException;
 import com.example.mapper.GoodsMapper;
+import com.example.mapper.GoodsStockMapper;
+import com.example.mapper.OrdersMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import jakarta.annotation.Resource;
@@ -19,6 +21,10 @@ public class GoodsService {
 
     @Resource
     private GoodsMapper goodsMapper;
+    @Resource
+    private OrdersMapper ordersMapper;
+    @Resource
+    private GoodsStockMapper goodsStockMapper;
 
     /**
      * 新增
@@ -32,6 +38,12 @@ public class GoodsService {
      * 删除
      */
     public void deleteById(Integer id) {
+        if (ordersMapper.countByGoodsId(id) > 0) {
+            throw new CustomException("该商品已有订单，不能删除");
+        }
+        if (goodsStockMapper.countByGoodsId(id) > 0) {
+            throw new CustomException("该商品已有库存记录，不能删除");
+        }
         goodsMapper.deleteById(id);
     }
 

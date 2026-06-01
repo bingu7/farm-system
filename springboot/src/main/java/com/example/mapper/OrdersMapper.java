@@ -49,4 +49,10 @@ public interface OrdersMapper {
     Double totalSpentByUser(Integer userId);
 
     Long countPendingOrders(Integer userId);
+
+    @Select("select count(*) from orders where goods_id = #{goodsId}")
+    int countByGoodsId(Integer goodsId);
+
+    @Select("select count(*) from orders where user_id = #{userId}")
+    int countByUserId(Integer userId);
 }

@@ -3,6 +3,10 @@ server:
 
 # 数据库配置
 spring:
+  config:
+    import:
+      - optional:classpath:application-local.yml
+      - optional:file:./application-local.yml
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME:root}

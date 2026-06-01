@@ -54,4 +54,7 @@ public interface GoodsMapper {
      */
     List<StatVo> countByCategory();
 
+    @Select("select count(*) from goods where category_id = #{categoryId}")
+    int countByCategoryId(Integer categoryId);
+
 }
