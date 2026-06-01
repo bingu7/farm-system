@@ -1,19 +1,25 @@
 package com.example.controller;
 
-import com.example.common.Result;
 import com.example.Utils.AuthUtils;
+import com.example.common.Result;
 import com.example.entity.Account;
 import com.example.entity.Orders;
+import com.example.exception.CustomException;
 import com.example.service.OrdersService;
 import com.github.pagehelper.PageInfo;
 import jakarta.annotation.Resource;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/**
- * 前端操作接口
- **/
 @RestController
 @RequestMapping("/orders")
 public class OrdersController {
@@ -21,9 +27,6 @@ public class OrdersController {
     @Resource
     private OrdersService ordersService;
 
-    /**
-     * 新增
-     */
     @PostMapping("/add")
     public Result add(@RequestBody Orders orders) {
         Account currentUser = AuthUtils.getCurrentUser();
@@ -32,9 +35,6 @@ public class OrdersController {
         return Result.success();
     }
 
-    /**
-     * 删除
-     */
     @DeleteMapping("/delete/{id}")
     public Result deleteById(@PathVariable Integer id) {
         AuthUtils.requireAdmin();
@@ -42,14 +42,11 @@ public class OrdersController {
         return Result.success();
     }
 
-    /**
-     * 修改
-     */
     @PutMapping("/update")
     public Result updateById(@RequestBody Orders orders) {
         Orders dbOrders = ordersService.selectById(orders.getId());
         if (dbOrders == null) {
-            return Result.error("订单不存在");
+            throw new CustomException("订单不存在");
         }
         Account currentUser = AuthUtils.getCurrentUser();
         AuthUtils.requireSelfOrAdmin(dbOrders.getUserId());
@@ -57,9 +54,6 @@ public class OrdersController {
         return Result.success();
     }
 
-    /**
-     * 根据ID查询
-     */
     @GetMapping("/selectById/{id}")
     public Result selectById(@PathVariable Integer id) {
         Orders orders = ordersService.selectById(id);
@@ -70,9 +64,6 @@ public class OrdersController {
         return Result.success(orders);
     }
 
-    /**
-     * 查询所有
-     */
     @GetMapping("/selectAll")
     public Result selectAll(Orders orders) {
         Account currentUser = AuthUtils.getCurrentUser();
@@ -83,9 +74,6 @@ public class OrdersController {
         return Result.success(list);
     }
 
-    /**
-     * 分页查询
-     */
     @GetMapping("/selectPage")
     public Result selectPage(Orders orders,
                              @RequestParam(defaultValue = "1") Integer pageNum,
@@ -97,5 +85,4 @@ public class OrdersController {
         PageInfo<Orders> page = ordersService.selectPage(orders, pageNum, pageSize);
         return Result.success(page);
     }
-
 }

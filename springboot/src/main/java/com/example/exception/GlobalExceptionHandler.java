@@ -3,33 +3,45 @@ package com.example.exception;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import com.example.common.Result;
-import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
-
-@ControllerAdvice(basePackages = "com.example.controller")
+@ControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Log log = LogFactory.get();
 
-
-    //统一异常处理@ExceptionHandler,主要用于Exception
-    @ExceptionHandler(Exception.class)
-    @ResponseBody//返回json串
-    public Result error(HttpServletRequest request, Exception e) {
-        log.error("异常信息：", e);
-        return Result.error();
-    }
-
     @ExceptionHandler(CustomException.class)
-    @ResponseBody//返回json串
-    public Result customError(HttpServletRequest request, CustomException e) {
-        Result res = new Result();
-        res.setCode(e.getCode()); // 这里非常重要！如果是 401 就设为 401，如果是 500 就设为 500
-        res.setMsg(e.getMsg());
-        return res;
+    public ResponseEntity<Result> customError(CustomException e) {
+        return ResponseEntity.status(toHttpStatus(e.getCode()))
+                .body(Result.error(e.getCode(), e.getMsg()));
     }
 
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Result> maxUploadSizeError(MaxUploadSizeExceededException e) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(Result.error("413", "上传文件不能超过5MB"));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Result> error(Exception e) {
+        log.error("异常信息：", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Result.error());
+    }
+
+    private HttpStatus toHttpStatus(String code) {
+        if ("401".equals(code)) {
+            return HttpStatus.UNAUTHORIZED;
+        }
+        if ("403".equals(code)) {
+            return HttpStatus.FORBIDDEN;
+        }
+        if ("400".equals(code)) {
+            return HttpStatus.BAD_REQUEST;
+        }
+        return HttpStatus.INTERNAL_SERVER_ERROR;
+    }
 }

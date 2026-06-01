@@ -5,6 +5,7 @@ import com.example.Utils.AccountSanitizer;
 import com.example.entity.Account;
 import com.example.entity.Admin;
 import com.example.Utils.PasswordUtils;
+import com.example.Utils.ValidationUtils;
 import com.example.exception.CustomException;
 import com.example.mapper.AdminMapper;
 import com.github.pagehelper.PageHelper;
@@ -27,6 +28,10 @@ public class AdminService {
      * 新增
      */
     public void add(Admin admin) {
+        ValidationUtils.validateUsername(admin.getUsername());
+        if (ObjectUtil.isNotEmpty(admin.getPassword())) {
+            ValidationUtils.validatePassword(admin.getPassword());
+        }
         Admin dbAdmin = adminMapper.selectByUsername(admin.getUsername());
         if (ObjectUtil.isNotNull(dbAdmin)) {
             throw new CustomException("用户已存在");
@@ -53,6 +58,7 @@ public class AdminService {
      * 修改
      */
     public void updateById(Admin admin) {
+        ValidationUtils.validateUsername(admin.getUsername());
         Admin dbAdmin = adminMapper.selectById(admin.getId());
         if (ObjectUtil.isNull(dbAdmin)) {
             throw new CustomException("用户不存在");
@@ -66,6 +72,7 @@ public class AdminService {
         if (ObjectUtil.isEmpty(admin.getPassword())) {
             admin.setPassword(dbAdmin.getPassword());
         } else {
+            ValidationUtils.validatePassword(admin.getPassword());
             admin.setPassword(PasswordUtils.encode(admin.getPassword()));
         }
         admin.setRole("ADMIN");
@@ -100,6 +107,8 @@ public class AdminService {
      * 登录
      */
     public Account login(Account account) {
+        ValidationUtils.requireText(account.getUsername(), "用户名不能为空");
+        ValidationUtils.requireText(account.getPassword(), "密码不能为空");
         Admin dbAdmin = adminMapper.selectByUsername(account.getUsername());
         if (ObjectUtil.isNull(dbAdmin)) {
             throw new CustomException("用户不存在");
@@ -119,6 +128,8 @@ public class AdminService {
      * 修改密码
      */
     public void updatePassword(Account account) {
+        ValidationUtils.requireText(account.getPassword(), "原密码不能为空");
+        ValidationUtils.validatePassword(account.getNewPassword());
         Admin dbAdmin = adminMapper.selectByUsername(account.getUsername());
         if (ObjectUtil.isNull(dbAdmin)) {
             throw new CustomException("用户不存在");

@@ -10,6 +10,7 @@ const ALLOWED_IMAGE_TYPES = [
 ]
 
 const ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024
 
 export const getUploadHeaders = () => {
   const user = JSON.parse(localStorage.getItem('system-user') || '{}')
@@ -26,5 +27,19 @@ export const beforeImageUpload = (file) => {
     return false
   }
 
+  if (file.size > MAX_IMAGE_SIZE) {
+    ElMessage.error('图片大小不能超过5MB')
+    return false
+  }
+
   return true
+}
+
+export const handleUploadError = (error) => {
+  try {
+    const response = JSON.parse(error.message)
+    ElMessage.error(response.msg || '上传失败')
+  } catch (e) {
+    ElMessage.error('上传失败')
+  }
 }

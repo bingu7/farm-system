@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.common.Result;
+import com.example.exception.CustomException;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,21 +42,26 @@ public class FileController {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
+    @Value("${file.max-upload-size}")
+    private long maxUploadSize;
+
     @PostMapping("/upload")
     public Result upload(@RequestParam("file") MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            return Result.error("请选择要上传的文件");
+            throw new CustomException("请选择要上传的文件");
+        }
+        if (file.getSize() > maxUploadSize) {
+            throw new CustomException("上传文件不能超过5MB");
         }
 
-        String originalFilename = file.getOriginalFilename();
-        String extension = getExtension(originalFilename);
+        String extension = getExtension(file.getOriginalFilename());
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            return Result.error("仅支持 JPG、JPEG、PNG、GIF、WEBP、BMP 图片");
+            throw new CustomException("仅支持 JPG、JPEG、PNG、GIF、WEBP、BMP 图片");
         }
 
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase())) {
-            return Result.error("上传文件类型不合法");
+            throw new CustomException("上传文件类型不合法");
         }
 
         try {
@@ -65,14 +71,13 @@ public class FileController {
             String fileName = UUID.randomUUID().toString().replace("-", "") + "." + extension;
             Path targetPath = fileDirectory.resolve(fileName).normalize();
             if (!targetPath.startsWith(fileDirectory)) {
-                return Result.error("文件路径不合法");
+                throw new CustomException("文件路径不合法");
             }
 
             file.transferTo(targetPath);
-            String url = fileBaseUrl + "/files/download/" + fileName;
-            return Result.success(url);
+            return Result.success(fileBaseUrl + "/files/download/" + fileName);
         } catch (IOException e) {
-            return Result.error("文件上传失败");
+            throw new CustomException("文件上传失败");
         }
     }
 

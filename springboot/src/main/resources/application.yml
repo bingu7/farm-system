@@ -10,8 +10,8 @@ spring:
     url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:farm_system}?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2b8&allowPublicKeyRetrieval=true
   servlet:
     multipart:
-      max-file-size: 100MB
-      max-request-size: 100MB
+      max-file-size: 5MB
+      max-request-size: 5MB
 # redis
   data:
     redis:
@@ -35,3 +35,4 @@ fileBaseUrl: ${FILE_BASE_URL:http://localhost:9090}
 file:
   #upload-dir: ${FILE_UPLOAD_DIR:${user.home}/farm-system/uploads}
   upload-dir: ${FILE_UPLOAD_DIR:D:/farm-system/uploads}
+  max-upload-size: ${FILE_MAX_UPLOAD_SIZE:5242880}

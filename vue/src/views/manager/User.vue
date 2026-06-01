@@ -43,7 +43,7 @@
     <el-dialog title="信息" width="40%" v-model="data.formVisible" :close-on-click-modal="false" destroy-on-close>
       <el-form :model="data.form" label-width="100px" style="padding-right: 50px">
         <el-form-item label="头像" prop="avatar">
-          <el-upload :action="uploadUrl" :headers="uploadHeaders" :before-upload="beforeImageUpload" list-type="picture" :on-success="handleImgSuccess">
+          <el-upload :action="uploadUrl" :headers="uploadHeaders" :before-upload="beforeImageUpload" :on-error="handleUploadError" list-type="picture" :on-success="handleImgSuccess">
             <el-button type="primary">上传图片</el-button>
           </el-upload>
         </el-form-item>
@@ -79,7 +79,7 @@
 
 <script setup>
 import request from "@/utils/request";
-import { beforeImageUpload, getUploadHeaders } from "@/utils/upload";
+import { beforeImageUpload, getUploadHeaders, handleUploadError } from "@/utils/upload";
 import {reactive} from "vue";
 import {ElMessageBox, ElMessage} from "element-plus";
 

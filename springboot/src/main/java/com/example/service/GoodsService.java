@@ -1,12 +1,14 @@
 package com.example.service;
 
 import com.example.entity.Goods;
+import com.example.exception.CustomException;
 import com.example.mapper.GoodsMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -22,6 +24,7 @@ public class GoodsService {
      * 新增
      */
     public void add(Goods goods) {
+        validateGoods(goods);
         goodsMapper.insert(goods);
     }
 
@@ -36,6 +39,7 @@ public class GoodsService {
      * 修改
      */
     public void updateById(Goods goods) {
+        validateGoods(goods);
         goodsMapper.updateById(goods);
     }
 
@@ -68,6 +72,24 @@ public class GoodsService {
         PageHelper.startPage(pageNum, pageSize);
         List<Goods> list = goodsMapper.selectAll(goods);
         return PageInfo.of(list);
+    }
+
+    private void validateGoods(Goods goods) {
+        if (goods == null) {
+            throw new CustomException("商品信息不能为空");
+        }
+        if (goods.getName() == null || goods.getName().trim().isEmpty()) {
+            throw new CustomException("商品名称不能为空");
+        }
+        if (goods.getPrice() == null || goods.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+            throw new CustomException("商品价格不能小于0");
+        }
+        if (goods.getStore() == null || goods.getStore() < 0) {
+            throw new CustomException("商品库存不能小于0");
+        }
+        if (goods.getCategoryId() == null) {
+            throw new CustomException("请选择商品分类");
+        }
     }
 
 }

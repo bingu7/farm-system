@@ -3,7 +3,7 @@
     <div class="card" style="padding: 30px">
       <el-form :model="data.user" label-width="100px" style="padding-right: 50px">
         <div style="margin: 20px 0; text-align: center">
-          <el-upload :show-file-list="false" class="avatar-uploader" :action="uploadUrl" :headers="uploadHeaders" :before-upload="beforeImageUpload" :on-success="handleFileUpload">
+          <el-upload :show-file-list="false" class="avatar-uploader" :action="uploadUrl" :headers="uploadHeaders" :before-upload="beforeImageUpload" :on-success="handleFileUpload" :on-error="handleUploadError">
             <img v-if="data.user.avatar" :src="data.user.avatar" class="avatar" />
             <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
           </el-upload>
@@ -39,7 +39,7 @@
 <script setup>
 import {reactive} from "vue"
 import request from "@/utils/request";
-import { beforeImageUpload, getUploadHeaders } from "@/utils/upload";
+import { beforeImageUpload, getUploadHeaders, handleUploadError } from "@/utils/upload";
 import {ElMessage} from "element-plus";
 
 const data = reactive({
