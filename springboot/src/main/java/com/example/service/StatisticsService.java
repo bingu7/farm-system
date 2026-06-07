@@ -23,9 +23,9 @@ public class StatisticsService {
 
         if ("ADMIN".equals(role)) {
             // 管理员统计
-            map.put("card1", userMapper.selectAll(null).size());
-            map.put("card2", goodsMapper.selectAll(null).size());
-            map.put("card3", ordersMapper.selectAll(null).size());
+            map.put("card1", userMapper.countAll());
+            map.put("card2", goodsMapper.countAll());
+            map.put("card3", ordersMapper.countAll());
             map.put("card1Text", "全站用户数");
             map.put("card2Text", "全站商品数");
             map.put("card3Text", "全站总订单量");

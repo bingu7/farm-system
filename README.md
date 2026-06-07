@@ -81,7 +81,7 @@ FILE_BASE_URL
 
 ```text
 管理员：admin / admin123
-普通用户：demo_user / user123
+普通用户：ccc / 123
 ```
 ## 上传目录配置
 

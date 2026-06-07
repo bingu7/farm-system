@@ -55,4 +55,7 @@ public interface OrdersMapper {
 
     @Select("select count(*) from orders where user_id = #{userId}")
     int countByUserId(Integer userId);
+
+    @Select("select count(*) from orders")
+    int countAll();
 }

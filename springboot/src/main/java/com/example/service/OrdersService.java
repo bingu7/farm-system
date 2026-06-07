@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class OrdersService {
@@ -54,7 +55,17 @@ public class OrdersService {
         ordersMapper.insert(orders);
     }
 
-    public void deleteById(Integer id) {
+    @Transactional
+    public void deleteById(Integer id, Account currentUser) {
+        if (id == null) {
+            throw new CustomException("订单不存在");
+        }
+        Orders dbOrders = ordersMapper.selectById(id);
+        if (dbOrders == null) {
+            throw new CustomException("订单不存在");
+        }
+        assertOrderOwnerOrAdmin(dbOrders, currentUser);
+        assertAllowedDelete(dbOrders, currentUser);
         ordersMapper.deleteById(id);
     }
 
@@ -74,6 +85,7 @@ public class OrdersService {
             return;
         }
 
+        assertOrderOwnerOrAdmin(dbOrders, currentUser);
         assertAllowedStatusChange(dbOrders.getStatus(), targetStatus, currentUser);
 
         if (STATUS_CANCELLED.equals(targetStatus)) {
@@ -96,6 +108,25 @@ public class OrdersService {
 
         if (!allowed) {
             throw new CustomException("订单状态流转不合法");
+        }
+    }
+
+    private void assertOrderOwnerOrAdmin(Orders orders, Account currentUser) {
+        if (AuthUtils.isAdmin(currentUser)) {
+            return;
+        }
+        if (currentUser == null || !Objects.equals(currentUser.getId(), orders.getUserId())) {
+            throw new CustomException("403", "无权限操作");
+        }
+    }
+
+    private void assertAllowedDelete(Orders orders, Account currentUser) {
+        String status = orders.getStatus();
+        boolean allowed = AuthUtils.isAdmin(currentUser)
+                ? STATUS_CANCELLED.equals(status) || STATUS_COMPLETED.equals(status)
+                : STATUS_CANCELLED.equals(status);
+        if (!allowed) {
+            throw new CustomException("当前订单状态不允许删除");
         }
     }
 

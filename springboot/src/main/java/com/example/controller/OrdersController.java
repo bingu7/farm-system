@@ -37,8 +37,8 @@ public class OrdersController {
 
     @DeleteMapping("/delete/{id}")
     public Result deleteById(@PathVariable Integer id) {
-        AuthUtils.requireAdmin();
-        ordersService.deleteById(id);
+        Account currentUser = AuthUtils.getCurrentUser();
+        ordersService.deleteById(id, currentUser);
         return Result.success();
     }
 

@@ -123,17 +123,10 @@ public class FileController {
     }
 
     private Path resolveDownloadPath(String fileName) {
-        Path[] directories = new Path[]{
-                getFileDirectory(),
-                Paths.get(System.getProperty("user.dir"), "files").toAbsolutePath().normalize(),
-                Paths.get(System.getProperty("user.dir"), "..", "files").toAbsolutePath().normalize()
-        };
-
-        for (Path directory : directories) {
-            Path targetPath = directory.resolve(fileName).normalize();
-            if (targetPath.startsWith(directory) && Files.exists(targetPath) && Files.isRegularFile(targetPath)) {
-                return targetPath;
-            }
+        Path directory = getFileDirectory();
+        Path targetPath = directory.resolve(fileName).normalize();
+        if (targetPath.startsWith(directory) && Files.exists(targetPath) && Files.isRegularFile(targetPath)) {
+            return targetPath;
         }
 
         return null;

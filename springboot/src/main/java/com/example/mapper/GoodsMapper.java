@@ -57,4 +57,7 @@ public interface GoodsMapper {
     @Select("select count(*) from goods where category_id = #{categoryId}")
     int countByCategoryId(Integer categoryId);
 
+    @Select("select count(*) from goods")
+    int countAll();
+
 }

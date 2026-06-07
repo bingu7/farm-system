@@ -18,7 +18,6 @@ import { reactive } from "vue";
 import request from "@/utils/request";
 
 const data = reactive({
-  user: JSON.parse(localStorage.getItem('system-user') || '{}'),
   noticeList: []
 })
 

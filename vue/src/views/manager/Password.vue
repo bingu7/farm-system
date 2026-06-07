@@ -9,7 +9,7 @@
           <el-input v-model="data.user.newPassword" show-password />
         </el-form-item>
         <el-form-item label="确认新密码">
-          <el-input v-model="data.user.confirmPasword" show-password />
+          <el-input v-model="data.user.confirmPassword" show-password />
         </el-form-item>
         <div style="text-align: center">
           <el-button type="primary" @click="save">保存</el-button>
@@ -31,7 +31,7 @@ const data = reactive({
 
 // 把当前修改的用户信息存储到后台数据库
 const save = () => {
-  if (data.user.newPassword !== data.user.confirmPasword) {
+  if (data.user.newPassword !== data.user.confirmPassword) {
     ElMessage.error('确认新密码错误')
     return
   }

@@ -58,24 +58,18 @@ const data = reactive({
   pageNum: 1,
   pageSize: 10,
   total: 0,
-  formVisible: false,
-  form: {},
   tableData: [],
   orderNo: null
 })
 
 // 分页查询
 const load = () => {
-  // 1. 先准备好基础参数
   let params = {
     pageNum: data.pageNum,
     pageSize: data.pageSize,
     orderNo: data.orderNo
   }
 
-  // 2. 判断角色。如果是普通用户，强制在参数里加上自己的 ID
-  // 这样后端接收到的 Orders 对象里就会有 userId，从而触发 SQL 里的过滤
-  // 3. 发送请求
   request.get('/orders/selectPage', {
     params: params
   }).then(res => {
@@ -90,7 +84,6 @@ const changeStatus = (row, status) => {
     if (res.code === '200') {
       load()
       ElMessage.success('操作成功')
-      data.formVisible = false
     } else {
       ElMessage.error(res.msg)
     }
