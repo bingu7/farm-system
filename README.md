@@ -75,7 +75,10 @@ REDIS_HOST
 REDIS_PORT
 REDIS_PASSWORD
 FILE_BASE_URL
+JWT_SECRET
 ```
+
+`JWT_SECRET` 建议设置为至少 32 位字符。默认值仅用于本地开发，生产部署必须覆盖。
 
 ## 默认测试账号
 
@@ -91,4 +94,4 @@ FILE_BASE_URL
 $env:FILE_UPLOAD_DIR="D:\farm-system\uploads"
 ```
 
-如果不设置，后端默认保存到当前用户目录下的 `farm-system/uploads`，避免因为从不同目录启动后端导致图片分散到多个 `files` 目录。
+如果不设置，后端默认保存到 `D:/farm-system/uploads`。生产或多人协作环境建议显式配置 `FILE_UPLOAD_DIR`，避免上传文件分散到不同目录。

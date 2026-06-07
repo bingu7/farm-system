@@ -28,6 +28,8 @@ public class WebController {
     private StatisticsService statisticsService;
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
+    @Resource
+    private TokenUtils tokenUtils;
 
     /**
      * 默认请求接口
@@ -59,7 +61,7 @@ public class WebController {
         Account ac = "ADMIN".equals(account.getRole()) ? adminService.login(account) : userService.login(account);
 
         // 登录成功后生成 Token
-        String token = TokenUtils.createToken(ac.getId().toString(), ac.getRole());
+        String token = tokenUtils.createToken(ac.getId().toString(), ac.getRole());
         ac.setToken(token);
         AccountSanitizer.sanitize(ac);
 

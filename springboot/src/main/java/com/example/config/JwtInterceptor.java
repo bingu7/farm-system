@@ -19,6 +19,8 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
+    @Resource
+    private TokenUtils tokenUtils;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -28,7 +30,7 @@ public class JwtInterceptor implements HandlerInterceptor {
         }
 
         try {
-            JWTVerifier jwtVerifier = JWT.require(TokenUtils.getAlgorithm()).build();
+            JWTVerifier jwtVerifier = JWT.require(tokenUtils.getAlgorithm()).build();
             jwtVerifier.verify(token);
         } catch (Exception e) {
             throw new CustomException("401", "身份验证失败，请重新登录");

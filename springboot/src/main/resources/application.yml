@@ -30,8 +30,11 @@ spring:
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     map-underscore-to-camel-case: true
+
+jwt:
+  # Override JWT_SECRET in real deployments. The default is for local development only.
+  secret: ${JWT_SECRET:farm-system-local-dev-secret-change-me}
 
 # 文件上传的前缀url
 fileBaseUrl: ${FILE_BASE_URL:http://localhost:9090}

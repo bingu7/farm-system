@@ -12,6 +12,13 @@ spring:
       port: 6379
       password: your_redis_password
 
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+jwt:
+  secret: your_local_jwt_secret_at_least_32_chars
+
 fileBaseUrl: http://localhost:9090
 
 file:
